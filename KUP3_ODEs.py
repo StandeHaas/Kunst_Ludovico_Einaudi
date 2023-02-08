@@ -143,6 +143,7 @@ rgo_list_1 = [get_color(np.random.choice(['red', 'green', 'yellow','red', 'green
 rgo_list_2 = [get_color(np.random.choice(['red', 'green', 'yellow','red', 'green', 'yellow', 'purple']),0,0) for _ in range(100)] 
 rgo_list_3 = [get_color(np.random.choice(['red', 'green', 'yellow','red', 'green', 'yellow', 'purple']),0,0) for _ in range(100)] 
 rgo_list_4 = [get_color(np.random.choice(['red', 'green', 'yellow','red', 'green', 'yellow', 'purple']),0,0) for _ in range(100)] 
+rgo_list_5 = [get_color(np.random.choice(['red', 'green', 'yellow','red', 'green', 'yellow', 'purple']),0,0) for _ in range(100)] 
 # different options for phase portraits
 def cd_number(n):
     number = '#' + str(np.random.randint(1, 10**n)) 
@@ -225,22 +226,20 @@ def circle(x_sol, y_sol, color, width, alpha,r,e,f,q, _=0, dis =0):
         _ += 1
 
 
-random = [np.random.choice([0,0,0,1,2,3]) for _ in range(200)]
+random = [np.random.choice([0,0,0,0,0,1,1,1,2,3]) for _ in range(200)]
 def system(sys):
     systems = [sys[np.random.randint(0, len(sys))] for _ in range(200)]
     return systems
 
 def DE_on_DE(sol_, t, t_start, t_end, systems, color=0, width=1, alpha=1, delta=1, minimize = 20, r = 5):
-    dt = int((t_end - t_start)/2*len(t))
+    dt = 250
     n = 0 
     for sol in sol_:
         if random[n] != 0:
             t_s = t_start
-            _ = 0
             while t_s < t_end*len(t):
                 DE(systems[n], i=2, e=sol[0][t_s], f = sol[1][t_s], color_code=color, width=width, alpha=alpha, delta=delta, dt = 10, minimize=minimize, r = r)
                 t_s += dt
-                _ += 1
                 n += 1
         n += 1
 
@@ -256,29 +255,39 @@ def rotation(system,sol,t_s):
         rotation = np.arctan(S[1]/S[0])*180/np.pi
     return rotation, S
 
-def text_on_DE(sol_, t, t_start, system):
+def text_on_DE(sol_, t, t_start, t_end, system, systems, color, width, alpha, delta, minimize, r):
     songs = ['Uno', 'Divenire', 'Monday', 'Andare', 'Rose', 'Primavera', 'Oltremare', 'Fly', 'Ascolta', 'Ritornare', 'Svanire', 'Luce']
     q = 4
+    n = 0
+    d_t = 250
+    c = 0
     for sol in sol_:
         if q > 0:
             q -= 1
+            if random[n] != 0:
+                t_s = 0
+                while t_s < t_end*len(t):
+                    DE(systems[n], i=2, e=sol[0][t_s], f = sol[1][t_s], color_code=color, width=width, alpha=alpha, delta=delta, dt = 10, minimize=minimize, r = r)
+                    t_s += d_t
+                    n += 1
+            n += 1
         else:
             q = np.random.choice([4])
             dt = int(0.005*10000)
             t_s = int(t_start*10000)
             if len(songs) > 0:
-                txt = np.random.choice(songs)
-                songs.remove(txt)
+                txt = songs.pop()
                 angle, S = rotation(system, sol, 0)
                 if S[0] < 0:
                     txt = txt[::-1]
                 n = 0
                 for _ in txt:
                     angle, S = rotation(system, sol,t_s)
-                    plt.text(sol[0][t_s]-5,sol[1][t_s]-5,_, color=get_color('rgo',0,0),fontsize=26,fontproperties= prop, fontweight = 950, rotation = angle)
+                    plt.text(sol[0][t_s]-5,sol[1][t_s]-5,_, color=rgo_list_5[c],fontsize=26,fontproperties= prop, fontweight = 950, rotation = angle)
                     dt = int(dt * 1.2)
                     t_s += dt
                     n += 1
+                    c += 1
 
 def repeat(reps):
     plt.ion()
@@ -287,13 +296,18 @@ def repeat(reps):
     plt.xlim([-k,k])
     plt.ylim([-k,k])
     random_number_1 = np.random.randint(0, len(sink))
+    random_number_2 = np.random.randint(0, len(sink))
+    random_number_3 = np.random.randint(0, len(sink))
     txt = cd_number(7) 
     systems = system(spiral_source)
     for i in range(reps):
         DE(sink[random_number_1],3, color_code = 'light_grey_2', width = 100, delta = 33, dt = 5, alpha = 1)
+        DE(sink[random_number_2],3, color_code = 'white_1', width = 1, delta = 33, dt = 5, alpha = 1)
+        DE(sink[random_number_3],2, color_code = 'white_1', width = 1, delta = 33, dt = 5, alpha = 1)
         DE(sink[random_number_1],3, color_code = 'light_grey_1', width = 60, delta = 33, dt = 5, alpha = 0.3)
         DE(sink[random_number_1],3, color_code = 'white_1', width = 2, delta = 33, dt = 5, alpha = 1)
         sol_, t = DE(sink[random_number_1],3, color_code = 'light_grey_1', width = 20, delta = 33, dt = 5, alpha = 0.6)
+        DE_on_DE(sol_, t, 0,0.05, systems, color=rgo_list_4, width=2, alpha=0.9, delta=1, minimize=5, r = 0.000000000001 + 0.7*i)
         x_pos = -97
         n = 0
         for _ in 'L u d o v ic o  E in a u d i':
@@ -306,30 +320,45 @@ def repeat(reps):
             plt.text(x_pos,-94,_, color=rgo_list_3[n],fontsize=19,fontproperties= prop, fontweight = 950)
             x_pos += 4.2
             n += 1
-        DE_on_DE(sol_, t, 0,0.05, systems, color=rgo_list_4, width=2, alpha=0.9, delta=1, minimize=5, r = 0.000000000001 + 1.2*i)
+        y_pos = -88
+        n = 0 
+        for _ in 'Di v e ni r e'[::-1]:
+            plt.text(-102,y_pos,_, color=rgo_list_4[n],fontsize=32,fontproperties= prop, fontweight = 950, rotation = -90)
+            y_pos += 5.4
+            n += 1
+        
 
         plt.axis('off')      
         figure.canvas.draw()
         figure.canvas.flush_events()
-        plt.savefig('cd_5 {}'.format(i))
+        plt.savefig('cd_14 {}'.format(i))
 
-repeat(20)
+#repeat(20)
 
-def repeat():
+def repeat(reps):
+    plt.ion()
     figure,ax = plt.subplots()
-    random_number_1 = np.random.randint(0, len(sink))
-    DE(sink[random_number_1],3, color_code = 'light_grey_2', width = 100, delta = 33, dt = 5, alpha = 1)
-    DE(sink[random_number_1],3, color_code = 'light_grey_1', width = 60, delta = 33, dt = 5, alpha = 0.3)
-    DE(sink[random_number_1],3, color_code = 'white_1', width = 2, delta = 33, dt = 5, alpha = 1)
-    sol_, t = DE(sink[random_number_1],3, color_code = 'light_grey_1', width = 20, delta = 33, dt = 5, alpha = 0.6)
-
-    text_on_DE(sol_, t, 0.005, sink[random_number_1])
-    
     k = 100
     plt.xlim([-k,k])
     plt.ylim([-k,k])
-    plt.axis('off')
-    plt.savefig('cd_back')
-    plt.show()
+    random_number_1 = np.random.randint(0, len(sink))
+    random_number_2 = np.random.randint(0, len(sink))
+    random_number_3 = np.random.randint(0, len(sink))
+    systems = system(spiral_source)
+    for i in range(reps):   
+        DE(sink[random_number_1],3, color_code = 'light_grey_2', width = 100, delta = 33, dt = 5, alpha = 1)
+        DE(sink[random_number_2],3, color_code = 'white_1', width = 1, delta = 33, dt = 5, alpha = 1)
+        DE(sink[random_number_3],2, color_code = 'white_1', width = 1, delta = 33, dt = 5, alpha = 1)
+        DE(sink[random_number_1],3, color_code = 'light_grey_1', width = 60, delta = 33, dt = 5, alpha = 0.3)
+        DE(sink[random_number_1],3, color_code = 'white_1', width = 2, delta = 33, dt = 5, alpha = 1)
+        sol_, t = DE(sink[random_number_1],3, color_code = 'light_grey_1', width = 20, delta = 33, dt = 5, alpha = 0.6)
 
-repeat()
+        text_on_DE(sol_, t, 0.005, 0.05, sink[random_number_1], systems, color=rgo_list_4, width=2, alpha=0.9, delta=1, minimize=5, r = 0.000000000001 + 0.7*i)
+    
+
+        plt.axis('off')
+        figure.canvas.draw()
+        figure.canvas.flush_events()
+        plt.savefig('cd_back_2 {}'.format(i))
+  
+repeat(20)
